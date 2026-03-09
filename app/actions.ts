@@ -13,6 +13,34 @@ import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { clientInputSchema, createSessionSchema } from "@/lib/validation";
 
+function buildLoginErrorUrl(params: {
+  error?: string;
+  message?: string;
+  phase?: "send" | "callback";
+  sent?: string;
+}) {
+  const searchParams = new URLSearchParams();
+
+  if (params.error) {
+    searchParams.set("error", params.error);
+  }
+
+  if (params.message) {
+    searchParams.set("message", params.message);
+  }
+
+  if (params.phase) {
+    searchParams.set("phase", params.phase);
+  }
+
+  if (params.sent) {
+    searchParams.set("sent", params.sent);
+  }
+
+  const query = searchParams.toString();
+  return query ? `/login?${query}` : "/login";
+}
+
 async function resolveSiteUrl() {
   const headerStore = await headers();
   const origin = headerStore.get("origin");
@@ -42,7 +70,13 @@ export async function loginAction(formData: FormData) {
   if (hasSupabaseEnv()) {
     const supabase = await createSupabaseServerClient();
     if (!supabase) {
-      redirect("/login?error=auth");
+      redirect(
+        buildLoginErrorUrl({
+          error: "auth",
+          phase: "send",
+          message: "Supabase 서버 클라이언트를 만들지 못했습니다.",
+        }),
+      );
     }
 
     const callbackUrl = new URL("/auth/callback", await resolveSiteUrl()).toString();
@@ -54,7 +88,18 @@ export async function loginAction(formData: FormData) {
     });
 
     if (error) {
-      redirect("/login?error=auth");
+      console.error("Supabase signInWithOtp failed", {
+        callbackUrl,
+        email,
+        error,
+      });
+      redirect(
+        buildLoginErrorUrl({
+          error: "auth",
+          phase: "send",
+          message: error.message,
+        }),
+      );
     }
 
     redirect("/login?sent=1");

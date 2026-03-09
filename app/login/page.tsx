@@ -6,12 +6,31 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { hasSupabaseEnv } from "@/lib/supabase/client";
 
+type LoginSearchParams = {
+  error?: string;
+  message?: string;
+  phase?: string;
+  sent?: string;
+};
+
+function getErrorCopy(error?: string, phase?: string) {
+  if (error === "auth") {
+    if (phase === "callback") {
+      return "이메일 링크를 확인하는 단계에서 인증이 완료되지 않았습니다. Supabase 이메일 템플릿과 Redirect URL을 확인하세요.";
+    }
+
+    return "인증 요청을 처리하지 못했습니다. Supabase 설정과 Redirect URL을 확인하세요.";
+  }
+
+  return "이메일을 입력한 뒤 다시 시도하세요.";
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; sent?: string }>;
+  searchParams: Promise<LoginSearchParams>;
 }) {
-  const { error, sent } = await searchParams;
+  const { error, message, phase, sent } = await searchParams;
   const supabaseReady = hasSupabaseEnv();
 
   return (
@@ -27,7 +46,8 @@ export default async function LoginPage({
               현장에서 바로 쓰는 맨몸 스쿼트 스크리닝
             </h1>
             <p className="text-sm leading-6 text-muted">
-              트레이너 전용 로그인입니다. 영상은 서버에 저장하지 않고, 분석 결과와 검사 기록만 보관합니다.
+              트레이너 전용 로그인입니다. 영상은 서버에 저장하지 않고, 분석 결과와 검사 기록만
+              보관합니다.
             </p>
           </div>
 
@@ -39,7 +59,7 @@ export default async function LoginPage({
             <p className="mt-2 leading-6">
               {supabaseReady
                 ? "이메일 주소로 로그인 세션을 시작합니다. 운영 시에는 Supabase Auth 매직링크와 연결해 사용할 수 있습니다."
-                : "환경변수가 없으면 파일 기반 데모 저장소로 동작합니다. 한 기기에서 전체 흐름 검증이 가능합니다."}
+                : "환경변수가 없으면 파일 기반 데모 저장소로 동작합니다. 이 기기에서 전체 흐름 검증이 가능합니다."}
             </p>
           </div>
 
@@ -59,11 +79,20 @@ export default async function LoginPage({
               </p>
             ) : null}
             {error ? (
-              <p className="text-sm text-danger">
-                {error === "auth"
-                  ? "인증 요청을 처리하지 못했습니다. Supabase 설정과 Redirect URL을 확인하세요."
-                  : "이메일을 입력한 뒤 다시 시도하세요."}
-              </p>
+              <div className="space-y-2 rounded-2xl border border-danger/20 bg-danger/5 p-3">
+                <p className="text-sm text-danger">{getErrorCopy(error, phase)}</p>
+                {message ? (
+                  <p className="text-xs leading-5 text-danger/80 break-all">
+                    상세 오류: {message}
+                  </p>
+                ) : null}
+                {phase === "callback" ? (
+                  <p className="text-xs leading-5 text-muted">
+                    특히 모바일 메일 앱에서는 Supabase 이메일 템플릿이 기본값이면 인증 상태를
+                    이어받지 못할 수 있습니다.
+                  </p>
+                ) : null}
+              </div>
             ) : null}
             <Button className="w-full">
               {supabaseReady ? "매직링크 보내기" : "로그인 시작"}
