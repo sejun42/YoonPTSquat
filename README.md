@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yoon PT Squat
 
-## Getting Started
+트레이너 전용 맨몸 스쿼트 스크리닝 PWA입니다. 휴대폰 카메라 또는 기존 영상으로 스쿼트를 분석하고, 추가 검사 결과와 메모를 합쳐 읽기 전용 리포트 링크를 발행합니다.
 
-First, run the development server:
+## 핵심 원칙
+
+- 운동 종목은 `맨몸 스쿼트` 한 가지만 지원합니다.
+- 원본 영상은 서버에 저장하지 않습니다.
+- 회원은 로그인하지 않고, 공개 토큰 기반 리포트 링크만 열람합니다.
+- 결과 표현은 `관찰 결과 / 의심 패턴 / 추가 검사 권장` 중심으로 제한합니다.
+
+## 스택
+
+- Next.js 15 App Router
+- TypeScript
+- Tailwind CSS
+- Recharts
+- MediaPipe Pose Landmarker
+- Supabase 연동 준비 코드 + Drizzle 스키마
+- 기본 실행 저장소: 파일 기반 데모 DB (`data/demo-db.json`)
+
+## 실행
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 [http://localhost:3000](http://localhost:3000) 을 엽니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 검증
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+`npm run check` 는 `.next/types` 가 생성된 이후 동작합니다. 가장 확실한 전체 검증은 `npm run build` 입니다.
 
-To learn more about Next.js, take a look at the following resources:
+## 환경 변수
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.example` 기준으로 설정합니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `DATABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_MEDIAPIPE_POSE_MODEL_URL`
 
-## Deploy on Vercel
+환경 변수가 없으면 데모 로그인 + 파일 기반 저장소로 동작합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 현재 포함된 흐름
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. 트레이너 이메일 로그인
+2. 회원 생성 / 검색 / 상세 조회
+3. 새 평가 세션 생성
+4. 카메라 촬영 또는 갤러리 영상 선택
+5. 클라이언트 측 MediaPipe 기반 규칙 분석
+6. 자동 감지 패턴 숨김 / 수동 패턴 추가
+7. 추천 검사 입력 + 수동 검사 추가
+8. 최종 요약 수정
+9. 공유 리포트 발행 / 재발행 / 비활성화
+10. 회원용 읽기 전용 리포트 조회
