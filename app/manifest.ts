@@ -14,9 +14,9 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ko",
     icons: [
       {
-        src: "/icon",
-        sizes: "512x512",
-        type: "image/png",
+        src: "/favicon.ico",
+        sizes: "32x32",
+        type: "image/x-icon",
       },
     ],
   };
