@@ -32,10 +32,9 @@ npm run dev
 
 ```bash
 npm run lint
+npm run check
 npm run build
 ```
-
-`npm run check` 는 `.next/types` 가 생성된 이후 동작합니다. 가장 확실한 전체 검증은 `npm run build` 입니다.
 
 ## 환경 변수
 
@@ -43,10 +42,25 @@ npm run build
 
 - `DATABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_MEDIAPIPE_POSE_MODEL_URL`
 
 환경 변수가 없으면 데모 로그인 + 파일 기반 저장소로 동작합니다.
+
+## Supabase 연결
+
+1. Supabase 프로젝트를 만든 뒤 Auth Email 로그인과 Redirect URL을 설정합니다.
+2. [supabase/schema.sql](/D:/YoonPTSquat/supabase/schema.sql)을 SQL Editor에서 실행합니다.
+3. `.env.local`에 Supabase URL, publishable key, site URL을 채웁니다.
+4. `npm run dev`로 실행한 뒤 로그인 화면에서 매직링크를 전송합니다.
+
+Supabase 환경변수가 있으면:
+
+- 로그인은 이메일 매직링크 기반으로 동작합니다.
+- `public.users` / `clients` / `assessment_sessions` 이하 테이블을 사용합니다.
+- 공개 리포트는 `get_public_report()` 함수로 읽기 전용 토큰 조회를 처리합니다.
 
 ## 현재 포함된 흐름
 

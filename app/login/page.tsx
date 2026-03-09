@@ -9,9 +9,9 @@ import { hasSupabaseEnv } from "@/lib/supabase/client";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; sent?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, sent } = await searchParams;
   const supabaseReady = hasSupabaseEnv();
 
   return (
@@ -53,13 +53,20 @@ export default async function LoginPage({
                 required
               />
             </label>
+            {sent ? (
+              <p className="text-sm text-success">
+                매직링크를 전송했습니다. 이메일에서 로그인 링크를 열어 주세요.
+              </p>
+            ) : null}
             {error ? (
               <p className="text-sm text-danger">
-                이메일을 입력한 뒤 다시 시도하세요.
+                {error === "auth"
+                  ? "인증 요청을 처리하지 못했습니다. Supabase 설정과 Redirect URL을 확인하세요."
+                  : "이메일을 입력한 뒤 다시 시도하세요."}
               </p>
             ) : null}
             <Button className="w-full">
-              로그인 시작
+              {supabaseReady ? "매직링크 보내기" : "로그인 시작"}
               <ArrowRight className="ml-2 size-4" />
             </Button>
           </form>

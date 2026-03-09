@@ -1,11 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-export function hasSupabaseEnv() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-}
+import { getSupabasePublishableKey, getSupabaseUrl, hasSupabaseEnv } from "@/lib/supabase/config";
 
 export function createSupabaseBrowserClient() {
   if (!hasSupabaseEnv()) {
@@ -13,7 +8,9 @@ export function createSupabaseBrowserClient() {
   }
 
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
   );
 }
+
+export { hasSupabaseEnv };

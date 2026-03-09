@@ -3,6 +3,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { ensureTrainerProfile } from "@/lib/supabase/profile";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 export interface TrainerSession {
   trainerId: string;
   email: string;
@@ -23,6 +26,21 @@ function decode(value: string): TrainerSession | null {
 }
 
 export async function getTrainerSession() {
+  const supabase = await createSupabaseServerClient();
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.id && user.email) {
+      await ensureTrainerProfile(user.id, user.email, supabase);
+      return {
+        trainerId: user.id,
+        email: user.email,
+      } satisfies TrainerSession;
+    }
+  }
+
   const store = await cookies();
   const raw = store.get(COOKIE_NAME)?.value;
   return raw ? decode(raw) : null;
@@ -50,6 +68,9 @@ export async function setTrainerSession(session: TrainerSession) {
 }
 
 export async function clearTrainerSession() {
+  const supabase = await createSupabaseServerClient();
+  await supabase?.auth.signOut();
+
   const store = await cookies();
   store.delete(COOKIE_NAME);
 }
