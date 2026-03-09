@@ -22,7 +22,7 @@
     "idb-keyval": "^6.2.2",
     "lucide-react": "^0.577.0",
     "nanoid": "^5.1.6",
-    "next": "15.3.3",
+    "next": "15.3.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.8.0",
@@ -37,7 +37,7 @@
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.9",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
+    "eslint-config-next": "15.3.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
