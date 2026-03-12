@@ -345,6 +345,7 @@ function createFinding(
 
 function createRecommendedTest(
   sessionId: string,
+  view: ViewType,
   priorityOrder: number,
   testCode: string,
   reasonKo: string,
@@ -353,6 +354,7 @@ function createRecommendedTest(
   return {
     id: nanoid(),
     assessmentSessionId: sessionId,
+    sourceView: view,
     testCode,
     testNameKo: template?.nameKo ?? testCode,
     priorityOrder,
@@ -580,7 +582,7 @@ function deriveInsights(sessionId: string, view: ViewType, aggregate: AggregateM
   return {
     findings,
     recommendedTests: [...recs.entries()].map(([testCode, reasonKo], index) =>
-      createRecommendedTest(sessionId, index + 1, testCode, reasonKo),
+      createRecommendedTest(sessionId, view, index + 1, testCode, reasonKo),
     ),
   };
 }
@@ -640,6 +642,7 @@ export async function analyzeSquatVideo(
     const analysis = {
       id: nanoid(),
       assessmentSessionId: sessionId,
+      sourceView: view,
       repCountEstimate: aggregate.repCountEstimate,
       analysisQuality: aggregate.analysisQuality,
       metricsJson: {
@@ -677,6 +680,7 @@ export async function analyzeSquatVideo(
     const analysis = {
       id: nanoid(),
       assessmentSessionId: sessionId,
+      sourceView: view,
       repCountEstimate: 0,
       analysisQuality: "poor",
       metricsJson: {

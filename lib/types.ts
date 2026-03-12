@@ -90,6 +90,7 @@ export interface RawLandmarkSummary {
 export interface VideoAnalysisResult {
   id: string;
   assessmentSessionId: string;
+  sourceView: ViewType;
   repCountEstimate: number;
   analysisQuality: AnalysisQuality;
   metricsJson: AnalysisMetrics;
@@ -115,6 +116,7 @@ export interface Finding {
 export interface RecommendedTest {
   id: string;
   assessmentSessionId: string;
+  sourceView: ViewType | null;
   testCode: string;
   testNameKo: string;
   priorityOrder: number;
@@ -144,8 +146,10 @@ export interface ReportSnapshot {
   session: Pick<
     AssessmentSession,
     "id" | "movementType" | "selectedView" | "recordedAt" | "status"
-  >;
-  analysis: VideoAnalysisResult | null;
+  > & {
+    analyzedViews: ViewType[];
+  };
+  analyses: VideoAnalysisResult[];
   findings: Finding[];
   recommendedTests: RecommendedTest[];
   testResults: TestResult[];
@@ -166,7 +170,7 @@ export interface Report {
 export interface SessionDetail {
   session: AssessmentSession;
   client: Client;
-  analysis: VideoAnalysisResult | null;
+  analyses: VideoAnalysisResult[];
   findings: Finding[];
   recommendedTests: RecommendedTest[];
   testResults: TestResult[];
@@ -208,5 +212,5 @@ export interface SessionDraftPayload {
   recommendedTests?: RecommendedTest[];
   testResults?: TestResult[];
   summaryDraft?: FinalSummary;
-  analysis?: VideoAnalysisResult | null;
+  analyses?: VideoAnalysisResult[];
 }

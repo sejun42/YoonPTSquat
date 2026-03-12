@@ -4,10 +4,18 @@ import { createSessionAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requireTrainerSession } from "@/lib/auth";
-import { CAPTURE_GUIDE, VIEW_LABELS } from "@/lib/constants";
+import { VIEW_LABELS } from "@/lib/constants";
 import { getClients } from "@/lib/data/repository";
 
 const viewOptions = ["front", "side", "rear"] as const;
+
+const captureGuide = [
+  "전신이 발끝까지 모두 보이게 촬영하세요.",
+  "한 뷰당 스쿼트는 대략 10회 정도면 충분합니다.",
+  "정면으로 시작한 뒤 필요하면 세션 안에서 측면과 후면을 추가하세요.",
+  "회원과 카메라 사이 거리를 일정하게 유지하세요.",
+  "조명이 충분한 곳에서 촬영하세요.",
+] as const;
 
 export default async function NewSessionPage({
   searchParams,
@@ -28,7 +36,8 @@ export default async function NewSessionPage({
           </h2>
         </div>
         <p className="text-sm leading-6 text-muted">
-          운동 종목은 맨몸 스쿼트로 고정됩니다. 세션을 만든 뒤 해당 화면에서 촬영 또는 갤러리 영상을 분석합니다.
+          운동 종목은 맨몸 스쿼트로 고정됩니다. 여기서 시작 뷰를 하나 선택하고, 세션 화면 안에서
+          정면/측면/후면을 선택적으로 더 추가할 수 있습니다.
         </p>
       </Card>
 
@@ -57,7 +66,7 @@ export default async function NewSessionPage({
           </label>
 
           <div className="space-y-2">
-            <span className="text-sm font-medium">촬영 뷰 선택</span>
+            <span className="text-sm font-medium">시작 뷰 선택</span>
             <div className="grid grid-cols-3 gap-2">
               {viewOptions.map((view, index) => (
                 <label
@@ -83,8 +92,8 @@ export default async function NewSessionPage({
               촬영 가이드
             </div>
             <ul className="space-y-1">
-              {CAPTURE_GUIDE.map((guide) => (
-                <li key={guide}>• {guide}</li>
+              {captureGuide.map((guide) => (
+                <li key={guide}>- {guide}</li>
               ))}
             </ul>
           </div>

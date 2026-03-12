@@ -58,6 +58,7 @@ export const videoAnalysisResults = pgTable("video_analysis_results", {
   assessmentSessionId: uuid("assessment_session_id")
     .references(() => assessmentSessions.id)
     .notNull(),
+  sourceView: text("source_view").notNull(),
   repCountEstimate: integer("rep_count_estimate").notNull().default(0),
   analysisQuality: text("analysis_quality").notNull().default("poor"),
   metricsJson: jsonb("metrics_json").$type<AnalysisMetrics>().notNull(),
@@ -88,6 +89,7 @@ export const recommendedTests = pgTable("recommended_tests", {
   assessmentSessionId: uuid("assessment_session_id")
     .references(() => assessmentSessions.id)
     .notNull(),
+  sourceView: text("source_view"),
   testCode: text("test_code").notNull(),
   testNameKo: text("test_name_ko").notNull(),
   priorityOrder: integer("priority_order").notNull(),

@@ -95,6 +95,8 @@ export function createSummaryDraft(detail: SessionDetail) {
 }
 
 export function buildReportSnapshot(detail: SessionDetail, trainer: User): ReportSnapshot {
+  const analyzedViews = [...new Set(detail.analyses.map((analysis) => analysis.sourceView))];
+
   return {
     publishedAt: new Date().toISOString(),
     trainerEmail: trainer.email,
@@ -109,8 +111,9 @@ export function buildReportSnapshot(detail: SessionDetail, trainer: User): Repor
       selectedView: detail.session.selectedView,
       recordedAt: detail.session.recordedAt,
       status: detail.session.status,
+      analyzedViews,
     },
-    analysis: detail.analysis,
+    analyses: detail.analyses,
     findings: detail.findings.filter((finding) => !finding.isHiddenByTrainer),
     recommendedTests: detail.recommendedTests,
     testResults: detail.testResults.filter((test) => test.performed),

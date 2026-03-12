@@ -45,6 +45,7 @@ create table if not exists public.assessment_sessions (
 create table if not exists public.video_analysis_results (
   id uuid primary key default gen_random_uuid(),
   assessment_session_id uuid not null references public.assessment_sessions (id) on delete cascade,
+  source_view text not null check (source_view in ('front', 'side', 'rear')),
   rep_count_estimate integer not null default 0,
   analysis_quality text not null default 'poor' check (analysis_quality in ('good', 'fair', 'poor')),
   metrics_json jsonb not null,
@@ -70,6 +71,7 @@ create table if not exists public.findings (
 create table if not exists public.recommended_tests (
   id uuid primary key default gen_random_uuid(),
   assessment_session_id uuid not null references public.assessment_sessions (id) on delete cascade,
+  source_view text check (source_view in ('front', 'side', 'rear')),
   test_code text not null,
   test_name_ko text not null,
   priority_order integer not null,
@@ -77,6 +79,33 @@ create table if not exists public.recommended_tests (
   status text not null default 'recommended' check (status in ('recommended', 'skipped', 'completed')),
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.video_analysis_results
+  add column if not exists source_view text;
+
+alter table public.recommended_tests
+  add column if not exists source_view text;
+
+update public.video_analysis_results
+set source_view = coalesce(source_view, 'front')
+where source_view is null;
+
+alter table public.video_analysis_results
+  alter column source_view set not null;
+
+alter table public.video_analysis_results
+  drop constraint if exists video_analysis_results_source_view_check;
+
+alter table public.video_analysis_results
+  add constraint video_analysis_results_source_view_check
+  check (source_view in ('front', 'side', 'rear'));
+
+alter table public.recommended_tests
+  drop constraint if exists recommended_tests_source_view_check;
+
+alter table public.recommended_tests
+  add constraint recommended_tests_source_view_check
+  check (source_view in ('front', 'side', 'rear'));
 
 create table if not exists public.test_results (
   id uuid primary key default gen_random_uuid(),

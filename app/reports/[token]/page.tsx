@@ -19,6 +19,9 @@ export default async function PublicReportPage({
   }
 
   const snapshot = report.reportSnapshotJson;
+  const analyzedViews = snapshot.session.analyzedViews.length
+    ? snapshot.session.analyzedViews.map((view) => VIEW_LABELS[view]).join(" · ")
+    : VIEW_LABELS[snapshot.session.selectedView];
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-4 px-4 py-6">
@@ -29,11 +32,11 @@ export default async function PublicReportPage({
             {snapshot.client.name}님의 스쿼트 리포트
           </h1>
           <p className="text-sm text-muted">
-            평가일 {formatDate(snapshot.session.recordedAt)} · {VIEW_LABELS[snapshot.session.selectedView]} 뷰
+            평가일 {formatDate(snapshot.session.recordedAt)} · {analyzedViews} 뷰
           </p>
         </div>
         <div className="rounded-3xl border border-line bg-white/75 p-4 text-sm leading-6 text-muted">
-          영상은 저장되지 않았으며, 이번 페이지는 발행 시점의 읽기 전용 스냅샷으로 제공됩니다.
+          영상은 저장되지 않았고, 이 페이지는 발행 시점의 읽기 전용 스냅샷으로만 제공됩니다.
         </div>
       </Card>
 
@@ -46,12 +49,12 @@ export default async function PublicReportPage({
         <h2 className="font-semibold">영상에서 관찰된 움직임 특징</h2>
         {snapshot.findings.length ? (
           snapshot.findings.map((finding) => (
-            <div
-              key={finding.id}
-              className="rounded-3xl border border-line bg-white/75 p-4"
-            >
+            <div key={finding.id} className="rounded-3xl border border-line bg-white/75 p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-medium">{finding.labelKo}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium">{finding.labelKo}</p>
+                  <Badge tone="neutral">{VIEW_LABELS[finding.sourceView]}</Badge>
+                </div>
                 <Badge tone={finding.category === "hypothesis" ? "warn" : "default"}>
                   {finding.category === "hypothesis" ? "의심 패턴" : "관찰 결과"}
                 </Badge>
@@ -70,12 +73,16 @@ export default async function PublicReportPage({
         {snapshot.testResults.length ? (
           <div className="space-y-3">
             {snapshot.testResults.map((test) => (
-              <div
-                key={test.id}
-                className="rounded-3xl border border-line bg-white/75 p-4"
-              >
+              <div key={test.id} className="rounded-3xl border border-line bg-white/75 p-4">
                 <p className="font-medium">
-                  {test.testNameKo} · {test.side === "left" ? "좌측" : test.side === "right" ? "우측" : "전체"}
+                  {test.testNameKo} ·{" "}
+                  {test.side === "left"
+                    ? "좌측"
+                    : test.side === "right"
+                      ? "우측"
+                      : test.side === "bilateral"
+                        ? "양측/전체"
+                        : "기타"}
                 </p>
                 <p className="mt-1 text-sm text-muted">{test.resultLabel}</p>
                 {test.memo ? (

@@ -53,6 +53,7 @@ interface SessionRow {
 interface VideoAnalysisRow {
   id: string;
   assessment_session_id: string;
+  source_view: ViewType;
   rep_count_estimate: number;
   analysis_quality: VideoAnalysisResult["analysisQuality"];
   metrics_json: VideoAnalysisResult["metricsJson"];
@@ -78,6 +79,7 @@ interface FindingRow {
 interface RecommendedTestRow {
   id: string;
   assessment_session_id: string;
+  source_view: ViewType | null;
   test_code: string;
   test_name_ko: string;
   priority_order: number;
@@ -164,6 +166,7 @@ function toAnalysis(row: VideoAnalysisRow): VideoAnalysisResult {
   return {
     id: row.id,
     assessmentSessionId: row.assessment_session_id,
+    sourceView: row.source_view,
     repCountEstimate: row.rep_count_estimate,
     analysisQuality: row.analysis_quality,
     metricsJson: row.metrics_json,
@@ -193,6 +196,7 @@ function toRecommendedTest(row: RecommendedTestRow): RecommendedTest {
   return {
     id: row.id,
     assessmentSessionId: row.assessment_session_id,
+    sourceView: row.source_view,
     testCode: row.test_code,
     testNameKo: row.test_name_ko,
     priorityOrder: row.priority_order,
@@ -235,6 +239,7 @@ function serializeAnalysis(analysis: VideoAnalysisResult) {
   return {
     id: analysis.id,
     assessment_session_id: analysis.assessmentSessionId,
+    source_view: analysis.sourceView,
     rep_count_estimate: analysis.repCountEstimate,
     analysis_quality: analysis.analysisQuality,
     metrics_json: analysis.metricsJson,
@@ -264,6 +269,7 @@ function serializeRecommendedTest(test: RecommendedTest) {
   return {
     id: test.id,
     assessment_session_id: test.assessmentSessionId,
+    source_view: test.sourceView,
     test_code: test.testCode,
     test_name_ko: test.testNameKo,
     priority_order: test.priorityOrder,
@@ -290,7 +296,7 @@ function serializeTestResult(result: TestResult) {
 }
 
 function deriveSessionStatus(detail: SessionDetail): SessionStatus {
-  const hasAnalysis = Boolean(detail.analysis);
+  const hasAnalysis = detail.analyses.length > 0;
   const hasTests = detail.testResults.some((test) => test.performed);
   const hasSummary = Boolean(
     detail.session.summaryDraftJson &&
@@ -386,9 +392,7 @@ async function loadSessionDetail(trainerId: string, sessionId: string) {
   return {
     session: toSession(sessionRow),
     client: toClient(clientRow),
-    analysis: ((unwrap(analysisRows) as VideoAnalysisRow[])[0]
-      ? toAnalysis((unwrap(analysisRows) as VideoAnalysisRow[])[0])
-      : null),
+    analyses: (unwrap(analysisRows) as VideoAnalysisRow[]).map(toAnalysis),
     findings: (unwrap(findingRows) as FindingRow[]).map(toFinding),
     recommendedTests: (unwrap(recommendedRows) as RecommendedTestRow[]).map(toRecommendedTest),
     testResults: (unwrap(resultRows) as TestResultRow[]).map(toTestResult),
@@ -561,18 +565,18 @@ export async function saveSessionDraft(
   const supabase = await requireSupabase();
   await loadSessionDetail(trainerId, sessionId);
 
-  if (payload.analysis !== undefined) {
+  if (payload.analyses) {
     unwrap(
       await supabase
         .from("video_analysis_results")
         .delete()
         .eq("assessment_session_id", sessionId),
     );
-    if (payload.analysis) {
+    if (payload.analyses.length) {
       unwrap(
         await supabase
           .from("video_analysis_results")
-          .insert(serializeAnalysis(payload.analysis)),
+          .insert(payload.analyses.map(serializeAnalysis)),
       );
     }
   }

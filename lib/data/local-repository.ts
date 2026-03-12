@@ -45,11 +45,10 @@ function hydrateSessionDetail(
   return {
     session,
     client,
-    analysis:
-      sortByDateDesc(
-        db.videoAnalysisResults.filter((item) => item.assessmentSessionId === sessionId),
-        (item) => item.createdAt,
-      )[0] ?? null,
+    analyses: sortByDateDesc(
+      db.videoAnalysisResults.filter((item) => item.assessmentSessionId === sessionId),
+      (item) => item.createdAt,
+    ),
     findings: db.findings.filter((item) => item.assessmentSessionId === sessionId),
     recommendedTests: db.recommendedTests
       .filter((item) => item.assessmentSessionId === sessionId)
@@ -63,7 +62,7 @@ function hydrateSessionDetail(
 }
 
 function deriveSessionStatus(detail: SessionDetail) {
-  const hasAnalysis = Boolean(detail.analysis);
+  const hasAnalysis = detail.analyses.length > 0;
   const hasTests = detail.testResults.some((test) => test.performed);
   const hasSummary = Boolean(
     detail.session.summaryDraftJson &&
@@ -215,12 +214,12 @@ export async function saveSessionDraft(
   return mutateDb<SessionDetail>((db) => {
     const detail = hydrateSessionDetail(trainerId, sessionId, db);
 
-    if (payload.analysis !== undefined) {
+    if (payload.analyses) {
       db.videoAnalysisResults = db.videoAnalysisResults.filter(
         (item) => item.assessmentSessionId !== sessionId,
       );
-      if (payload.analysis) {
-        db.videoAnalysisResults.push(payload.analysis);
+      if (payload.analyses.length) {
+        db.videoAnalysisResults.push(...payload.analyses);
       }
     }
 
